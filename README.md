@@ -9,6 +9,8 @@
 
 Windows 였다가 mac할래
 
+RabbitMQ,
+
 -----
 
 ## 1. Rabbit MQ 다운받기
@@ -31,4 +33,61 @@ rabbitmq-server
 에러남.  
 
 맥북오면 할래..
+
+-----
+
+12.7
+맥이 왔다.
+
+환경 설치를 하고 시작.
+
+### 구조
+
+![](/img/Arch.png)
+
+
+
+1. homebrew를 설치
+
+-----
+
+#### 에러발생
+
+```text
+Warning : /opt/homebrew/bin is not in your path
+```
+
+에러가 발생
+
+##### 해결방법
+
+vi ~/.zshrc 를 실행
+
+```text
+source ~/.bash_profile
+export PATH="/opt/homebrew/bin:$PATH"
+```
+
+를 입력
+
+-----
+
+## 2. rabbitmq 설치
+
+```text
+brew install rabbitmq
+```
+
+```cmd
+$rabbitmq-server <- 포그라운드 실행
+$brew services start rabbitmq <- 백그라운드 실행
+```
+
+나 같은 경우 포그라운드 실행에서 
+
+```text
+zsh : command not found : rabbitmq-server
+```
+
+가 떴다.. 하 맥북어렵다.
 
