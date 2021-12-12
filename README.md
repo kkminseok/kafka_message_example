@@ -212,3 +212,90 @@ compileOnly 'org.eclipse.jetty:jetty-maven-plugin:9.4.38.v20210224'
 
 zookeeper가 기본적으로 8080포트를 쓰는데, 이 포트랑 아파치 포트가 겹쳐서 오류가난 것. 
 혹시 몰라서 스프링 부트 톰캣 서버 포트를 8090으로 바꿧는데 잘 됨.
+
+하지만 매 번 포트를 바꿔줄 수 없는 노릇이므로, zookeeper의 포트를 바꿔주기로함.
+
+zookeeper의 설정 파일을 가보면(/opt/homebrew/Cellar/zookeeper/3.7.0_1/share/zookeeper/examples) zoo_sample.cfg
+
+
+```bash
+# The number of milliseconds of each tick
+tickTime=2000
+# The number of ticks that the initial
+# synchronization phase can take
+initLimit=10
+# The number of ticks that can pass between
+# sending a request and getting an acknowledgement
+syncLimit=5
+# the directory where the snapshot is stored.
+# do not use /tmp for storage, /tmp here is just
+# example sakes.
+dataDir=/tmp/zookeeper
+# the port at which the clients will connect
+clientPort=2181
+# the maximum number of client connections.
+# increase this if you need to handle more clients
+#maxClientCnxns=60
+#
+# Be sure to read the maintenance section of the
+# administrator guide before turning on autopurge.
+#
+# http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_maintenance
+#
+# The number of snapshots to retain in dataDir
+#autopurge.snapRetainCount=3
+# Purge task interval in hours
+# Set to "0" to disable auto purge feature
+#autopurge.purgeInterval=1
+
+## Metrics Providers
+#
+# https://prometheus.io Metrics Exporter
+#metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider
+#metricsProvider.httpPort=7000
+#metricsProvider.exportJvmInfo=true
+~                                                                                                                  
+~                                                                                                                  
+~                                           
+```
+d
+요로콤 되어있다. 클라이언트포트가 2181인데 왜 이딴 오류가 발생하는걸까?
+
+대충 스택오버플로우
+<https://stackoverflow.com/questions/59943241/zookeeper-admin-server-port>
+에 가보니 admin port도 따로 설정해줘야 하나? 했음.
+
+```bash
+admin.serverPort=2182
+```
+
+혹시 클라이언트 포트랑 겹칠까봐 그냥 2182로 설정한 값을 추가했더니 톰캣이랑 충돌 안나고 잘 됨.
+
++++++
+
+그냥 이래도 안 됨.
+
+뭐가 문제일까 생각해봤는데, kafka 설치할 때 이미 zookeeper도 설치된거라고 생각.
+
+이유는 kafka 폴더 안에 'zookeeper-server-start'가 있음.
+
+그냥 homebrew로 다운 받은거 다 삭제하고 tar버전으로 다운받아서 서버킨지 안 꼬이고 됨.
+
+열받는다.
+
+
+제대로 실행되면 다음과 같이 뜬다.
+
+왼쪽은 zookeeper , 오른쪽은 kafka
+![](/img/kafka_zookeeper.png)  
+
+
+이제 포 그라운드에서 실행하여 된 것을 확인하였으니, 다음 명령어를 통해 백그라운드에서 실해하게 바꾸자.
+
+무조건 주키퍼 먼저 실행해야한다. 안 그럼 카프카가 주키퍼를 못 찾아서 삽질하게 된다.!!!
+
+
+```bash
+bin/zookeeper-server-start.sh -daemon config/zookeeper.properties -> 주키퍼 실행
+bin/kafka-server-start.sh -daemon config/server.properties -> 카프카 실행
+```
